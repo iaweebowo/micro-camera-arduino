@@ -43,12 +43,12 @@ void setup() {
   pinMode(motor2pin1,  OUTPUT);
   pinMode(motor2pin2, OUTPUT);
 
-  //Controlling speed (0  = off and 255 = max speed):     
+  // Controlling speed (0  = off and 255 = max speed):
+  // Min speed 40!     
   pinMode(ENAPIN,  OUTPUT); // ENA Pin
   pinMode(ENAPIN, OUTPUT); // ENB Pin
 
   // 630 is full extend, 0 is full retract
-  potval = analogRead(A0);
   move_to(630);
   // analogWrite(9, 0);
 }
@@ -56,7 +56,7 @@ void setup() {
 /* Loop Code */
 void loop() { 
   potval = analogRead(A0);
-  // Serial.println(String(potval));
+  // Serial.println(potval);
   strcpy(tempChars, receivedChars);
   recvWithStartEndMarkers();
   parseData();
@@ -67,10 +67,12 @@ void loop() {
 void recvWithStartEndMarkers() {
     static boolean recvInProgress = false;
     static byte ndx = 0;
+    // Expected start and end characters
     char startMarker = '<';
     char endMarker = '>';
     char rc;
 
+    // Wait for python input
     while (Serial.available() > 0 && newData == false) {
         rc = Serial.read();
 
@@ -98,6 +100,7 @@ void recvWithStartEndMarkers() {
 // Received string details parsing
 void parseData() {
   // Get parts of received string
+  // Expected format: "<ABC 123;>"
   char * strtokIndx;
   strtokIndx = strtok(tempChars," ");
   strcpy(textfromPC, strtokIndx);
@@ -109,7 +112,6 @@ void parseData() {
     switch(textfromPC[0]) {
       case 'A':
         Serial.println(receivedChars);
-        delay(1000);
         break;
       case 'E':
         extend(integerFromPC);
@@ -119,6 +121,9 @@ void parseData() {
         break;
       case 'P':
         move_to(integerFromPC);
+        break;
+      case 'G':
+        Serial.println(potval);
         break;
       default:
         break;
@@ -137,38 +142,42 @@ void go_reverse() {
   digitalWrite(motor1pin2, HIGH);
 }
 // Speed setting
+// Speed of 40 is minimum!
 void set_speed(int speed) {
   analogWrite(ENAPIN, speed); 
 }
 // Timed movements
 void extend(int millisecs) {
   if (potval < 630) {
-    set_speed(255);
     go_forward();
+    set_speed(255);
     delay(millisecs);
   }
   set_speed(0);
 }
 void retract(int millisecs) {
   if (potval > 10) {
-    set_speed(255);
     go_reverse();
+    set_speed(255);
     delay(millisecs);
   }
   set_speed(0);
 }
 // Position (rudimentary bang-bang control)
+// Max pot val is usually a bit over 630
 void move_to(int pos) {
-  while (potval < pos) {
-    set_speed(255);
-    go_forward();
+  potval = analogRead(A0);
+  while (abs(pos - potval) > 10) {
     potval = analogRead(A0);
-  }
-  delay(500);
-  while (potval > pos) {
-    set_speed(255);
-    go_reverse();
-    potval = analogRead(A0);
+    // Serial.println(potval);
+    if (pos - potval > 10) {
+      go_forward();
+      set_speed(50);
+    }
+    else if (potval - pos > 10) {
+      go_reverse();
+      set_speed(50);
+    }
   }
   set_speed(0);
 }
