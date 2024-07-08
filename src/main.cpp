@@ -1,5 +1,5 @@
 #include <Arduino.h>
-#include "L298N.h"
+#include <Servo.h>
 
 /* Function declarations */ 
 void extend(int millisecs);
@@ -8,6 +8,7 @@ void set_speed(int speed);
 void move_to(int pos);
 void go_forward();
 void go_reverse();
+void zoom(int zoom);
 void recvWithStartEndMarkers();
 void parseData();
 
@@ -30,6 +31,10 @@ int motor2pin2 = 5;
 int ENAPIN = 9;
 int ENBPIN = 10;
 
+int SRVPIN = 11;
+
+Servo zoomServo;
+
 /* Single Run Code */
 void setup() { 
   Serial.begin(9600);
@@ -48,9 +53,14 @@ void setup() {
   pinMode(ENAPIN,  OUTPUT); // ENA Pin
   pinMode(ENAPIN, OUTPUT); // ENB Pin
 
+  // pinMode(SRVPIN, OUTPUT);
+  zoomServo.attach(SRVPIN); // for some reason now, when we attach this pin it will not allow us to exit the position ctrl loop
+
   // 630 is full extend, 0 is full retract
   move_to(630);
   // analogWrite(9, 0);
+
+  zoomServo.write(0);
 }
 
 /* Loop Code */
@@ -122,6 +132,12 @@ void parseData() {
       case 'P':
         move_to(integerFromPC);
         break;
+      case 'S': 
+        set_speed(integerFromPC);
+        break;
+      case 'Z':
+        zoom(integerFromPC);
+        break;
       case 'G':
         Serial.println(potval);
         break;
@@ -172,14 +188,18 @@ void move_to(int pos) {
     // Serial.println(potval);
     if (pos - potval > 10) {
       go_forward();
-      set_speed(50);
+      set_speed(70);
     }
-    else if (potval - pos > 10) {
+    if (potval - pos > 10) {
       go_reverse();
-      set_speed(50);
+      set_speed(70);
     }
   }
   set_speed(0);
+}
+
+void zoom(int zoom) {
+  zoomServo.write(zoom);
 }
 
 // void retract_to(int pos) {
