@@ -25,11 +25,11 @@ int integerFromPC = 0;
 int motor1pin1 = 2;
 int motor1pin2 = 3;
 
-int motor2pin1 = 4;
-int motor2pin2 = 5;
+int motor2pin1 = 7;
+int motor2pin2 = 8;
 
-int ENAPIN = 9;
-int ENBPIN = 10;
+int ENAPIN = 5;
+int ENBPIN = 6;
 
 int SRVPIN = 11;
 
@@ -58,9 +58,11 @@ void setup() {
 
   // 630 is full extend, 0 is full retract
   move_to(630);
-  // analogWrite(9, 0);
+  analogWrite(9, 0);
 
   zoomServo.write(0);
+
+  Serial.println("SERIAL READY!");
 }
 
 /* Loop Code */
@@ -158,7 +160,7 @@ void go_reverse() {
   digitalWrite(motor1pin2, HIGH);
 }
 // Speed setting
-// Speed of 40 is minimum!
+// Speed of 70 is minimum!
 void set_speed(int speed) {
   analogWrite(ENAPIN, speed); 
 }
@@ -183,16 +185,18 @@ void retract(int millisecs) {
 // Max pot val is usually a bit over 630
 void move_to(int pos) {
   potval = analogRead(A0);
-  while (abs(pos - potval) > 10) {
+  while (abs(pos - potval) > 1) {
     potval = analogRead(A0);
-    // Serial.println(potval);
-    if (pos - potval > 10) {
+    // Serial.print(potval);
+    // Serial.print("|");
+    // Serial.println(pos);
+    if (pos - potval > 1) {
       go_forward();
-      set_speed(70);
+      set_speed(100);
     }
-    if (potval - pos > 10) {
+    if (potval - pos > 1) {
       go_reverse();
-      set_speed(70);
+      set_speed(100);
     }
   }
   set_speed(0);
