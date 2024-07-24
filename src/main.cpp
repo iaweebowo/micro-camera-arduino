@@ -57,7 +57,7 @@ void setup() {
   zoomServo.attach(SRVPIN); // for some reason now, when we attach this pin it will not allow us to exit the position ctrl loop
 
   // 630 is full extend, 0 is full retract
-  move_to(630);
+  move_to(635);
   analogWrite(9, 0);
 
   zoomServo.write(0);
@@ -127,23 +127,29 @@ void parseData() {
         break;
       case 'E':
         extend(integerFromPC);
+        Serial.println("Done!");
         break;
       case 'R':
         retract(integerFromPC);
+        Serial.println("Done!");
         break;
       case 'P':
         move_to(integerFromPC);
+        Serial.println("Done!");
         break;
       case 'S': 
         set_speed(integerFromPC);
+        Serial.println("Done!");
         break;
       case 'Z':
         zoom(integerFromPC);
+        Serial.println("Done!");
         break;
       case 'G':
         Serial.println(potval);
         break;
       default:
+        Serial.println("Done!");
         break;
     }
     newData = false;
@@ -192,11 +198,11 @@ void move_to(int pos) {
     // Serial.println(pos);
     if (pos - potval > 1) {
       go_forward();
-      set_speed(100);
+      set_speed(255);
     }
     if (potval - pos > 1) {
       go_reverse();
-      set_speed(100);
+      set_speed(255);
     }
   }
   set_speed(0);
