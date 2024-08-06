@@ -125,28 +125,36 @@ void parseData() {
       case 'A':
         Serial.println(receivedChars);
         break;
+      case 'B':
+        go_reverse();
+        Serial.println("Done!");
+        break;
       case 'E':
         extend(integerFromPC);
+        Serial.println("Done!");
+        break;
+      case 'F':
+        go_forward();
+        Serial.println("Done!");
+        break;
+      case 'G':
+        Serial.println(potval);
+        break;
+      case 'P':
+        move_to(integerFromPC);
         Serial.println("Done!");
         break;
       case 'R':
         retract(integerFromPC);
         Serial.println("Done!");
         break;
-      case 'P':
-        move_to(integerFromPC);
-        Serial.println("Done!");
-        break;
       case 'S': 
         set_speed(integerFromPC);
-        Serial.println("Done!");
+        Serial.println(integerFromPC);
         break;
       case 'Z':
         zoom(integerFromPC);
         Serial.println("Done!");
-        break;
-      case 'G':
-        Serial.println(potval);
         break;
       default:
         Serial.println("Done!");
@@ -198,11 +206,11 @@ void move_to(int pos) {
     // Serial.println(pos);
     if (pos - potval > 1) {
       go_forward();
-      set_speed(255);
+      set_speed(200);
     }
     if (potval - pos > 1) {
       go_reverse();
-      set_speed(255);
+      set_speed(200);
     }
   }
   set_speed(0);
