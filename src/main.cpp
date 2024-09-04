@@ -19,7 +19,7 @@ char receivedChars[numChars];
 char textfromPC[(int)numChars/2];
 char tempChars[numChars];        // temporary array for use by strtok() function
 boolean newData = false;
-int integerFromPC = 0;
+float integerFromPC = 0;
 
 // Pin vals for L298N to Arduino
 int motor1pin1 = 2;
@@ -58,7 +58,6 @@ void setup() {
 
   // 630 is full extend, 0 is full retract
   move_to(635);
-  analogWrite(9, 0);
 
   zoomServo.write(0);
 
@@ -117,7 +116,7 @@ void parseData() {
   strtokIndx = strtok(tempChars," ");
   strcpy(textfromPC, strtokIndx);
   strtokIndx = strtok(NULL, ";");   // this continues where the previous call left off
-  integerFromPC = atoi(strtokIndx); // convert this part to an integer
+  integerFromPC = atof(strtokIndx); // convert this part to an integer
 
   // Parse parts to interpret commands
   if (newData == true) {
@@ -199,6 +198,8 @@ void retract(int millisecs) {
 // Max pot val is usually a bit over 630
 void move_to(int pos) {
   potval = analogRead(A0);
+  if (pos > 640) pos = 640;
+  else if (pos < 0) pos = 0;
   while (abs(pos - potval) > 1) {
     potval = analogRead(A0);
     // Serial.print(potval);
