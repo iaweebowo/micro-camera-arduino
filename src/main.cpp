@@ -96,9 +96,6 @@ void loop() {
     }
     brush_vibrate(brushVibLength);
   }
-  else {
-    brush_off();
-  }
 }
 
 /* Function Definitions */
