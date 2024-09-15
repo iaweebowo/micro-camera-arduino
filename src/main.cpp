@@ -11,6 +11,8 @@ void go_reverse();
 void zoom(int zoom);
 void recvWithStartEndMarkers();
 void parseData();
+void brush_vibrate(int millis);
+void brush_off();
 
 /* Variable declarations */ 
 int potval;
@@ -20,6 +22,11 @@ char textfromPC[(int)numChars/2];
 char tempChars[numChars];        // temporary array for use by strtok() function
 boolean newData = false;
 float integerFromPC = 0;
+boolean brushOn = false;
+boolean brushOnStart = true;
+unsigned long brushTimer = 0;
+unsigned long brushTimerSaved = 0;
+int brushVibLength = 0;
 
 // Pin vals for L298N to Arduino
 int motor1pin1 = 2;
@@ -30,6 +37,9 @@ int motor2pin2 = 8;
 
 int ENAPIN = 5;
 int ENBPIN = 6;
+
+int BRSHPIN1 = 4;
+int BRSHPIN2 = 12;
 
 int SRVPIN = 11;
 
@@ -53,6 +63,13 @@ void setup() {
   pinMode(ENAPIN,  OUTPUT); // ENA Pin
   pinMode(ENAPIN, OUTPUT); // ENB Pin
 
+  // Brush pins
+  pinMode(BRSHPIN1, OUTPUT);
+  pinMode(BRSHPIN2, OUTPUT);
+
+  digitalWrite(BRSHPIN1, LOW);
+  digitalWrite(BRSHPIN2, LOW);
+
   // pinMode(SRVPIN, OUTPUT);
   zoomServo.attach(SRVPIN); // for some reason now, when we attach this pin it will not allow us to exit the position ctrl loop
 
@@ -67,10 +84,21 @@ void setup() {
 /* Loop Code */
 void loop() { 
   potval = analogRead(A0);
+  brushTimer = millis();
   // Serial.println(potval);
   strcpy(tempChars, receivedChars);
   recvWithStartEndMarkers();
   parseData();
+  if (brushOn) {
+    if (brushOnStart) {
+      brushTimerSaved = brushTimer;
+      brushOnStart = false;
+    }
+    brush_vibrate(brushVibLength);
+  }
+  else {
+
+  }
 }
 
 /* Function Definitions */
@@ -151,6 +179,12 @@ void parseData() {
         set_speed(integerFromPC);
         Serial.println(integerFromPC);
         break;
+      case 'V':
+        brushOn = true;
+        brushOnStart = true;
+        brushVibLength = integerFromPC;
+        Serial.println("Done!");
+        break;
       case 'Z':
         zoom(integerFromPC);
         Serial.println("Done!");
@@ -161,6 +195,28 @@ void parseData() {
     }
     newData = false;
   }
+}
+
+void brush_vibrate(int millis) {
+  if (int(brushTimer - brushTimerSaved) < millis) {
+    digitalWrite(BRSHPIN1, HIGH);
+    digitalWrite(BRSHPIN2, LOW);
+    delayMicroseconds(1200);
+    digitalWrite(BRSHPIN1, LOW);
+    digitalWrite(BRSHPIN2, HIGH);
+    delayMicroseconds(1200);
+  }
+  else {
+    brush_off();
+    brushOn = false;
+    brushOnStart = true;
+    brushVibLength = 0;
+  }
+}
+
+void brush_off() {
+  digitalWrite(BRSHPIN1, LOW);
+  digitalWrite(BRSHPIN2, LOW);
 }
 
 // Directional functions
