@@ -84,18 +84,18 @@ void setup() {
 /* Loop Code */
 void loop() { 
   potval = analogRead(A0);
-  brushTimer = millis();
-  // Serial.println(potval);
-  strcpy(tempChars, receivedChars);
-  recvWithStartEndMarkers();
-  parseData();
   if (brushOn) {
+    brushTimer = millis();
     if (brushOnStart) {
       brushTimerSaved = brushTimer;
       brushOnStart = false;
     }
     brush_vibrate(brushVibLength);
   }
+  // Serial.println(potval);
+  strcpy(tempChars, receivedChars);
+  recvWithStartEndMarkers();
+  parseData();
 }
 
 /* Function Definitions */
@@ -205,13 +205,13 @@ void brush_vibrate(int millis) {
   }
   else {
     brush_off();
-    brushOn = false;
     brushOnStart = true;
     brushVibLength = 0;
   }
 }
 
 void brush_off() {
+  brushOn = false;
   digitalWrite(BRSHPIN1, LOW);
   digitalWrite(BRSHPIN2, LOW);
 }
