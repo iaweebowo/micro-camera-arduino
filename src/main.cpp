@@ -71,7 +71,7 @@ void setup() {
   digitalWrite(BRSHPIN2, LOW);
 
   // pinMode(SRVPIN, OUTPUT);
-  zoomServo.attach(SRVPIN); // for some reason now, when we attach this pin it will not allow us to exit the position ctrl loop
+  zoomServo.attach(SRVPIN); 
 
   // 630 is full extend, 0 is full retract
   move_to(635);
